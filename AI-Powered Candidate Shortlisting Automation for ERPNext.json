@@ -1,0 +1,1033 @@
+{
+  "name": "AI-Powered Candidate Shortlisting Automation for ERPNext",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Get Apprropraite Data\nThese Nodes are to extract only the Required Data from the Webhook Node",
+        "height": 322,
+        "width": 429.96763122593137,
+        "color": 6
+      },
+      "id": "0a3e8df7-df24-4522-91f7-3eae7e14a779",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3024,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### N8N has the Node to convert PDF to Text, but PDF should be converted from Text. Scanned Image PDF will not be converted. \n\nYou can use ohter nodes here to convert word file to text or JPG to Text, possiblities are limitless.",
+        "height": 660,
+        "width": 677,
+        "color": 5
+      },
+      "id": "bf8b00ba-48dc-4354-b68a-9b7d923e7da5",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -976,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Download the File.\nIf you are using S3 to Upload attachments you can use S3 node here to download the attachment\n",
+        "height": 648.5051458745238,
+        "width": 477.2230145794152,
+        "color": 7
+      },
+      "id": "e0656de6-0b64-454b-9994-051bd1109464",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1472,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "bf8e73f8-971e-4ec4-9c51-917e817800a2",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2976,
+        160
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "### Applicant Applied for Job in ERPNext\n\nYou need to go to Webhooks in ERPNext and Create a Webhook on Job Applicant Doc Type and trigger should be on insert.\n\nFirst do the Test Wehbook and Pin the Webhook.\n\nFollow the Tutorial",
+        "height": 642,
+        "width": 398,
+        "color": 5
+      },
+      "id": "52b9362c-e2e5-4782-8f08-fc4de3118d4d",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3440,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8d600a4f-14d3-4840-aea0-665d26e7771b",
+              "name": "body",
+              "type": "object",
+              "value": "={{ $json.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0e1472bd-dc0d-4a74-a8f4-803e7523b55d",
+      "name": "ApplicantData",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2784,
+        160
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "docType": "Job%20Applicant",
+        "documentName": "={{ $('ApplicantData').item.json.body.name }}",
+        "properties": {
+          "customProperty": [
+            {
+              "field": "status",
+              "value": "Rejected"
+            }
+          ]
+        }
+      },
+      "id": "83edef8e-2969-4f4e-95c7-733ddefba089",
+      "name": "ERPNext - Reject if Resume not Attached",
+      "type": "n8n-nodes-base.erpNext",
+      "position": [
+        -2528,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": false,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "abbbd6f3-838e-43fb-a809-6bfffb153244",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "leftValue": "={{ $json.body.Job_opening }}",
+              "rightValue": "None"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "id": "a9a8cfb7-cfb4-4b11-85c3-eec8c587e2e1",
+      "name": "Applied Against Job",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2288,
+        144
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "docType": "Job%20Applicant",
+        "documentName": "={{ $('ApplicantData').item.json.body.name }}",
+        "properties": {
+          "customProperty": [
+            {
+              "field": "status",
+              "value": "Hold"
+            }
+          ]
+        }
+      },
+      "id": "b5c41c42-50dd-47e8-9b00-d86be32da590",
+      "name": "ERPNext - Hold Applicant",
+      "type": "n8n-nodes-base.erpNext",
+      "position": [
+        -2320,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Get Job Opening Data\nFrom ERPNext\n\nAs Job is applied against a specific Job, you can now get the Job Opening Data which must be having the Job Description.",
+        "height": 638.3801467714094,
+        "width": 258,
+        "color": 6
+      },
+      "id": "7b3b3dee-4a39-49e9-95b7-613a569e1aea",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "docType": "Job%20Opening",
+        "documentName": "={{ $('ApplicantData').item.json.body.Job_opening }}"
+      },
+      "id": "a1f96a13-34da-4032-aacd-b464ede4e649",
+      "name": "Get Job Opening",
+      "type": "n8n-nodes-base.erpNext",
+      "position": [
+        -224,
+        304
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### AI Agent to do its Job\nOpenAI\n\nSee full prompt which tells this AI Agent that you are a recruitment sepcialist and all the roles are defined in this node.\n\nIt will shortlist the candidate and will give the descriptive output with candidate fitlevel, score, rating and justification.",
+        "height": 662,
+        "width": 406.7864870360547,
+        "color": 4
+      },
+      "id": "16dc1df5-dbdc-4383-a8b4-9fe88b256e72",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Update data in ERPNext\nHere First node will do the formatting of the data and will convert output from AI Agent to Appropriate Fields which are defined in ERPNext and then will Send to Next Node\n\n### ERPNext (HTTP Node)\nThis node will take the Data from Previouis Node and will update the Applicant Data in ERPNext",
+        "height": 662,
+        "width": 438,
+        "color": 6
+      },
+      "id": "aeeb8782-4096-4e84-97e2-23635c10ee87",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        848,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-exp",
+        "options": {}
+      },
+      "id": "46aceeae-2ca0-4eef-ab61-e3d08f46b305",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        80,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input text from the `output` field\nconst textOutput = $json.output || '';\n\n// Function to extract values from the text\nfunction extractFields(text) {\n const fields = {};\n\n // Regular expressions to extract each field\n const fitLevelMatch = text.match(/FitLevel:\\s*(.+)\\n/);\n const scoreMatch = text.match(/Score:\\s*(\\d+)\\n/);\n const ratingMatch = text.match(/Rating:\\s*(\\d+)\\n/);\n const justificationMatch = text.match(/Justification:\\s*([\\s\\S]+)/);\n\n // Assign extracted values to the fields\n fields.fit_level = fitLevelMatch ? fitLevelMatch[1].trim() : null;\n fields.score = scoreMatch ? scoreMatch[1].trim() : null;\n fields.applicant_rating = ratingMatch ? ratingMatch[1].trim() : null;\n fields.justification_by_ai = justificationMatch ? justificationMatch[1].trim() : null;\n\n return fields;\n}\n\n// Extract fields from the output\nconst extractedFields = extractFields(textOutput);\n\n// Return the fields as JSON\nreturn {\n json: extractedFields\n};\n"
+      },
+      "id": "6d3c777a-6a7f-4731-b9a6-c767d31b1641",
+      "name": "Convert to Fields",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        528,
+        304
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "### Selected or Rejected\n\nThe criteia for score is that if Score is 80 or above Candidate will be selected Else Rejected.",
+        "height": 682,
+        "width": 226.43884349833064,
+        "color": 5
+      },
+      "id": "d2581da3-2931-491f-9802-9f08853c55f1",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1328,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "5f845292-f4aa-44fb-a644-06c0736c3503",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              },
+              "leftValue": "={{ $('Convert to Fields').item.json.score }}",
+              "rightValue": 80
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "12a41cca-2c15-443f-90c0-5c6ee8ce9b04",
+      "name": "If score less than 80",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1392,
+        304
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://erpnext.syncbricks.com/api/resource/Job Applicant/{{ $('ApplicantData').item.json.body.name }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "erpNextApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"status\": \"Rejected\"\n}",
+        "options": {}
+      },
+      "id": "3ca27681-a2b4-4342-a517-a8da79bbe9d2",
+      "name": "Reject Applicant",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1744,
+        144
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://erpnext.syncbricks.com/api/resource/Job Applicant/{{ $('ApplicantData').item.json.body.name }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "erpNextApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"applicant_rating\": \"{{ $json.applicant_rating }}\",\n \"custom_justification_by_ai\": \"{{ $json.justification_by_ai }}\",\n \"custom_fit_level\": \"{{ $json.fit_level }}\",\n \"custom_score\":\"{{ $json.score }}\"\n}\n\n\n\n\n",
+        "options": {}
+      },
+      "id": "2d35c73c-df1c-4f3d-9972-02a7162385ae",
+      "name": "Update Applicant Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1008,
+        304
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d0b8b98-0976-4c19-bc7c-738fabd60d28",
+              "name": "body.resume_attachment",
+              "type": "string",
+              "value": "={{ $json.body.resume_link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "293a3201-e590-4629-8244-aa76377d274a",
+      "name": "Reume Attachment Link",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1968,
+        240
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## Resume Available?\nFirst Node : If Resume is not attached or Then Job Applicant will be Rejected\nSecond Node : If job is not applied against opening then the Applicant will be kept on hold.",
+        "height": 302,
+        "width": 875.658619343735,
+        "color": 3
+      },
+      "id": "faf812aa-0bba-4cad-97c1-d0c4a5a3ba5a",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3008,
+        368
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3cd3da7d-d0fb-43fd-be10-3c1e627846b9",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              },
+              "leftValue": "={{ $json.body.resume_link }}",
+              "rightValue": "http"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c4b7b4f5-427d-4fce-9f2e-8db4b45de17b",
+      "name": "Resume Link Provided",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2544,
+        160
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://erpnext.syncbricks.com/api/resource/Job Applicant/{{ $('ApplicantData').item.json.body.name }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "erpNextApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"status\": \"Accepted\"\n}",
+        "options": {}
+      },
+      "id": "c5245dfa-9ae0-4c4c-af35-ff3dc7589adf",
+      "name": "Accept Applicant",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1728,
+        448
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "## Developed by Amjid Ali\n\nThank you for using this workflow template. It has taken me countless hours of hard work, research, and dedication to develop, and I sincerely hope it adds value to your work.\n\nIf you find this template helpful, I kindly ask you to consider supporting my efforts. Your support will help me continue improving and creating more valuable resources.\n\nYou can contribute via PayPal here:\n\nhttp://paypal.me/pmptraining\n\nFor Full Course about ERPNext or Automation using AI follow below link\n\nhttp://lms.syncbricks.com\n\nAdditionally, when sharing this template, I would greatly appreciate it if you include my original information to ensure proper credit is given.\n\nThank you for your generosity and support!\nEmail : amjid@amjidali.com\nhttps://linkedin.com/in/amjidali\nhttps://syncbricks.com\nhttps://youtube.com/@syncbricks",
+        "height": 636.1483291619771,
+        "width": 475.27306699862953,
+        "color": 4
+      },
+      "id": "a401249b-03c2-4d71-bf36-0ad7ad8bd08f",
+      "name": "Sticky Note11",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3936,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "syncbricks-com-tutorial-candidate-shortlist",
+        "options": {}
+      },
+      "id": "4d1903bd-8253-4b5d-8664-47d04cd11b82",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -3328,
+        304
+      ],
+      "webhookId": "f003f8ea-1f24-457c-8f28-762bd7942023",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "### Get file of Resume Detail from ERPNext Applicant\nExtract the Resume Download Link and Decide which Attachment type it is as every attachment will be treated differently.\nCurrently I provided only for PDF Version but you can add seperate flow for other versions",
+        "height": 654.6630436071407,
+        "width": 613.5767730410602,
+        "color": 6
+      },
+      "id": "373b2a57-0c0f-43f4-833c-4aeb3d0b7738",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2128,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Validate if the Resume is Available and It is against a specific Job\nThese Nodes are to extract only the Required Data from the Webhook Node",
+        "height": 310.20584626167124,
+        "width": 429.96763122593137,
+        "color": 6
+      },
+      "id": "34830d48-68a6-4c45-8def-0d5032e82780",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2560,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    },
+                    "leftValue": "={{ $json.body.resume_attachment }}",
+                    "rightValue": ".pdf"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "dabe1bd2-9aba-4a61-b0b3-08c22856b213",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $json.body.resume_attachment }}",
+                    "rightValue": ".doc"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "doc"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "1101fc2e-4220-4795-9342-58d88ea146ce",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    },
+                    "leftValue": "={{ $json.body.resume_attachment }}",
+                    "rightValue": ".jpg"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": ".jpg"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2021c735-06cb-438f-bddd-582f0fc8afc3",
+      "name": "File Type",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -1744,
+        240
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.resume_attachment }}",
+        "options": {}
+      },
+      "id": "5627b00d-767d-4916-9818-25b1ca351bd6",
+      "name": "Download PDF Resume",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1296,
+        144
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "c43956d3-cf2f-48cc-9373-76a60efe235d",
+      "name": "PDF to Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -864,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "b34260b1-8104-41cd-a8d1-3afd5be497bb",
+      "name": "Txt File to Text (Example)",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -880,
+        368
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "25363572-f5c5-4db4-872d-fc2ae5b86d0a",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -560,
+        304
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "agent": "reActAgent",
+        "promptType": "define",
+        "text": "=System Prompt : \nYou are a highly skilled AI agent trained to compare and analyze text from resumes against job descriptions. Your primary goal is to assess whether the candidate is a good fit for the role based on the given inputs. You will receive two inputs:\n\n1. **Job Description**: A detailed description of the responsibilities, qualifications, and skills required for a specific job role.\n2. **Resume Text**: A summary of a candidate's qualifications, skills, experience, and education.\n\nYour task is to:\n1. **Analyze Match**: Compare the candidate's resume text against the job description and assess the alignment of:\n - Required skills\n - Relevant experience\n - Educational background\n - Certifications\n - Keywords mentioned in both texts (e.g., specific tools, methodologies, or terminologies).\n\n2. **Assess Fit**: Determine if the candidate is a strong, moderate, or weak fit for the role. Assign a score from 0 to 100 based on relevance:\n - **Strong Fit**: 80–100 (Candidate meets or exceeds the majority of the job requirements).\n - **Moderate Fit**: 50–79 (Candidate meets some key requirements but lacks in others).\n - **Weak Fit**: Below 50 (Candidate does not align with the role requirements).\n\n3. **Provide Justification**: Include a brief explanation of why the candidate is or isn’t a good fit, highlighting strengths, gaps, or missing criteria.\n\nOutput Format:\n- **Fit Level**: [Strong Fit / Moderate Fit / Weak Fit]\n- **Score**: [0–100]\n- **Rating**: [0–5]\n- **Justification**: A concise summary of the reasoning behind the fit level.\n\nRemember to maintain a neutral and objective tone in your analysis and ensure that your assessment is solely based on the information provided in the inputs.\"\n\n\nProvide me the output in the following format:\n\nFitLevel\n<fitLevel>\n\nScore:\n<score>\n\nRating:\n<rating>\n\nJustification:\n<justification>\n\nBelow are the inputs \n\nJob Title : {{ $json.job_title }}\nJob Desription : {{ $json.description }}\n\n\nHere here Job Applican't text from Resume : \n{{ $('PDF to Text').item.json.text }}\n",
+        "options": {}
+      },
+      "id": "67e3ce4e-34f8-4715-bdd1-2ebc75d79b30",
+      "name": "Recruitment AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        64,
+        304
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "content": "### Create Fields\n\nThis Java Script will convert the extracted fieldws from AI Agent and will create fields which are already created in ERPNext.\n\nEnsure to create below fields in ERPNext : \n\njustification_by_ai\nfit_level\nscore\n\napplicant_rating field is already there, which will be updated with 1 to 5 star",
+        "height": 662,
+        "width": 374.6910896370089,
+        "color": 6
+      },
+      "id": "62cc83e1-ff3f-4e59-90f0-a0a829ef1469",
+      "name": "Sticky Note14",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        432,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Update data in ERPNext\nAPI Call\nCandidate Rejected",
+        "height": 308.0357387860514,
+        "width": 394.2810709723076,
+        "color": 3
+      },
+      "id": "0fe0aa10-af51-4c35-9155-9dd7ef4171f3",
+      "name": "Sticky Note15",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Update data in ERPNext\nAPI Call\nCandidate Rejected",
+        "height": 308.0357387860514,
+        "width": 385.4472695263088,
+        "color": 4
+      },
+      "id": "8e33cb12-3527-44cb-bdcf-d89b85ee2282",
+      "name": "Sticky Note16",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "id": "16eec45a-728e-4669-ae44-978ba7a1531c",
+      "name": "Microsoft Outlook",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        2112,
+        144
+      ],
+      "typeVersion": 2,
+      "webhookId": "201cbc4d-7f6c-4bf8-8596-c8d53c5257c3"
+    },
+    {
+      "parameters": {
+        "content": "### Notifiy Applicant either by Email or Whatsapp or SMS, Options are Limitless",
+        "height": 623.107990360008,
+        "width": 338.3336618143153,
+        "color": 6
+      },
+      "id": "8b52a2eb-ce0a-4dd4-8554-2a2bc237ee99",
+      "name": "Sticky Note17",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2000,
+        16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "additionalFields": {}
+      },
+      "id": "21fe219a-580d-4890-9da9-b1a1c8d9a47e",
+      "name": "WhatsApp Business Cloud",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        2144,
+        448
+      ],
+      "typeVersion": 1,
+      "webhookId": "c2b29045-0775-49cf-af51-21cdb036c797"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "ApplicantData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Get Job Opening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Type": {
+      "main": [
+        [
+          {
+            "node": "Download PDF Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF to Text": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ApplicantData": {
+      "main": [
+        [
+          {
+            "node": "Resume Link Provided",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Job Opening": {
+      "main": [
+        [
+          {
+            "node": "Recruitment AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accept Applicant": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Applicant": {
+      "main": [
+        [
+          {
+            "node": "Microsoft Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Fields": {
+      "main": [
+        [
+          {
+            "node": "Update Applicant Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Applied Against Job": {
+      "main": [
+        [
+          {
+            "node": "Reume Attachment Link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ERPNext - Hold Applicant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF Resume": {
+      "main": [
+        [
+          {
+            "node": "PDF to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recruitment AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Convert to Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume Link Provided": {
+      "main": [
+        [
+          {
+            "node": "Applied Against Job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ERPNext - Reject if Resume not Attached",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If score less than 80": {
+      "main": [
+        [
+          {
+            "node": "Reject Applicant",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Accept Applicant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reume Attachment Link": {
+      "main": [
+        [
+          {
+            "node": "File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Applicant Data": {
+      "main": [
+        [
+          {
+            "node": "If score less than 80",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recruitment AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Txt File to Text (Example)": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8174362c-f4ad-40b1-a4fc-33c8fe525b65",
+  "meta": {
+    "instanceId": "bb90100dc300f56d040f173bb9891f5b9718adc0da05af758a0b593fc0757a48"
+  },
+  "id": "F2pVXBXt8EsgRi8u",
+  "tags": []
+}

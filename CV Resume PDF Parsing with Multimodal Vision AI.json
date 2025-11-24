@@ -1,0 +1,313 @@
+{
+  "name": "CV Resume PDF Parsing with Multimodal Vision AI",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "85e8c166-18a8-4e5b-8ce2-fff009229171",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        912,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"is_qualified\": true,\n\t\"reason\": \"\"\n}"
+      },
+      "id": "90fbdf37-425a-4fe4-890d-7b0fdfcea741",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        2368,
+        416
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "4dd69ba3-bf07-43b3-86b7-d94b07e9eea6",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.output.is_qualified }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eba88c49-a6ec-4021-b6f6-f31e2e6d8a7e",
+      "name": "Should Proceed To Stage 2?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2528,
+        256
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## 1. Download Candidate Resume\n",
+        "height": 356,
+        "width": 544,
+        "color": 6
+      },
+      "id": "7e6516f5-c07d-41af-a7ee-d000e752019b",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1MORAdeev6cMcTJBV2EYALAwll8gCDRav"
+        },
+        "options": {}
+      },
+      "id": "60570af4-cdd8-40b1-aca5-d1b18a6650c4",
+      "name": "Download Resume",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1088,
+        272
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## 2. Convert PDF to Image(s)\n",
+        "height": 595.3148729042731,
+        "width": 605.0267171444024,
+        "color": 6
+      },
+      "id": "b8368132-9fb0-4a18-abae-6b8ae0e3a582",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1376,
+        -32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 3. Parse Resume with Multimodal LLM\n",
+        "height": 603.1395348837208,
+        "width": 747.8139534883712
+      },
+      "id": "1c656fc7-80ee-420c-8202-90f7de906f38",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2016,
+        -32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://stirlingpdf.io/api/v1/convert/pdf/img",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "fileInput",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "imageFormat",
+              "value": "jpg"
+            },
+            {
+              "name": "singleOrMultiple",
+              "value": "single"
+            },
+            {
+              "name": "dpi",
+              "value": "300"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a803d643-64c0-4502-9a97-66cc5f74d468",
+      "name": "PDF-to-Image API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1504,
+        320
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 75,
+        "height": 75,
+        "resizeOption": "percent",
+        "options": {}
+      },
+      "id": "3db272d4-7f8c-43a3-b38d-b23ce4930a80",
+      "name": "Resize Converted Image",
+      "type": "n8n-nodes-base.editImage",
+      "position": [
+        1696,
+        320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-pro-latest",
+        "options": {}
+      },
+      "id": "ef833d1c-8036-433f-8358-0a00c8b90eb4",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        2176,
+        416
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate the candidate's resume.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Assess the given Candiate Resume for the role of Plumber.\nDetermine if the candidate's skills match the role and if they qualify for an in-person interview."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            }
+          ]
+        }
+      },
+      "id": "1efd963a-8dcd-4822-902a-9f6252f00a83",
+      "name": "Candidate Resume Analyser",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        2176,
+        256
+      ],
+      "typeVersion": 1.4
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download Resume": {
+      "main": [
+        [
+          {
+            "node": "PDF-to-Image API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF-to-Image API": {
+      "main": [
+        [
+          {
+            "node": "Resize Converted Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resize Converted Image": {
+      "main": [
+        [
+          {
+            "node": "Candidate Resume Analyser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Candidate Resume Analyser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Candidate Resume Analyser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candidate Resume Analyser": {
+      "main": [
+        [
+          {
+            "node": "Should Proceed To Stage 2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "99b5c7e1-fa1a-4af8-8d84-1c049b47c676",
+  "meta": {
+    "instanceId": "bb90100dc300f56d040f173bb9891f5b9718adc0da05af758a0b593fc0757a48"
+  },
+  "id": "KRerk9a3OXPlChCQ",
+  "tags": []
+}

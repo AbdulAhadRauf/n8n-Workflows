@@ -1,0 +1,299 @@
+{
+  "name": "Superchat Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User's message: {{ $json.message.content.body }}",
+        "options": {
+          "systemMessage": "=Role & Purpose:\nYou are a Customer Support AI Agent for DFA Course Academy. Your main goal is to answer learners’ questions accurately, quickly, and helpfully based on the information available in the vector database and verified Q&A sources. You act as a friendly and knowledgeable assistant for anyone interested in or enrolled in DFA courses.\n\nCapabilities:\n- Retrieve and summarize relevant answers from the connected vector database.\n- Respond to general course inquiries (topics, access, certification, refunds, etc.).\n- Provide guidance on AI, automation, Notion, and Zapier-related questions.\n- Offer links or next steps when users need to purchase, access, or join communities.\n- Detect when information is missing or uncertain and respond transparently.\n- Maintain clarity, empathy, and professionalism in every message.\n\nTools:\nVector Database – retrieves and ranks relevant information for the user’s query.\n\nInteraction Style:\n- Friendly, supportive, and professional tone.\n- Use short, clear sentences and avoid jargon.\n- Always confirm understanding before giving technical or detailed steps.\n- End responses with a helpful suggestion or offer to clarify further.\n\nExample Output:\n**User:** “Do your courses work for beginners?”\n**AI:** “Yes! All DFA Course Academy courses start from the basics and gradually move to advanced topics. They’re designed to be beginner-friendly, with clear, step-by-step guidance so you can follow along even without prior experience.”\n\nNotes:\n- Always prioritize verified data from the vector database or the official Q&A.\n- When unsure or data is missing, reply honestly and suggest reaching out to the official community or support email.\n- Avoid making assumptions about course updates or pricing unless explicitly found in the data.\n- Keep answers concise—under 5 sentences unless detail is necessary.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "d0dc2097-4a69-464d-aed6-fc9ac3c80cdf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        144
+      ],
+      "id": "4d5ba724-915a-4cdd-b8a4-78574c2e46f3",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "description": "Here you will find information and data about the customer service"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        144
+      ],
+      "id": "868cee81-100c-4c0a-a801-d2686c84c883",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        336
+      ],
+      "id": "5fd15f50-707e-4bde-97a5-9bce89564e74",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LOUDhi3zIWcUAyioAnvDNjFw4UyB0RCgfc0ajsGv2Rs",
+          "mode": "list",
+          "cachedResultName": "Superchat",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LOUDhi3zIWcUAyioAnvDNjFw4UyB0RCgfc0ajsGv2Rs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LOUDhi3zIWcUAyioAnvDNjFw4UyB0RCgfc0ajsGv2Rs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Person's Number": "={{ $('Superchat Trigger').item.json.message.from.identifier }}",
+            "Message": "={{ $('AI Agent').item.json.output }}",
+            "Message Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Message Date",
+              "displayName": "Message Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Person's Number",
+              "displayName": "Person's Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        -64
+      ],
+      "id": "ab71d5a3-40ce-4155-84c2-cd88cec31ee0",
+      "name": "Append row in sheet"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-superchat.superchatTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -64
+      ],
+      "id": "e31c84c3-c25e-492f-af1f-e47ae9c420bc",
+      "name": "Superchat Trigger",
+      "webhookId": "89692277-6abe-47a6-b89c-3823101d58e7",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-preview-superchat.superchat",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -64
+      ],
+      "id": "2b605334-be15-4ea2-9e56-625dc2a3024b",
+      "name": "Send a message",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "company-data",
+          "mode": "list",
+          "cachedResultName": "company-data"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        336
+      ],
+      "id": "4e1586a3-3551-4d59-a626-111ca580655e",
+      "name": "Pinecone Vector Store1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        512
+      ],
+      "id": "fc2acece-0cad-4dda-a247-8d6e76a42508",
+      "name": "Embeddings OpenAI1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Superchat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "39362755-f692-4c24-9f69-953aaade83a2",
+  "meta": {
+    "instanceId": "bb90100dc300f56d040f173bb9891f5b9718adc0da05af758a0b593fc0757a48"
+  },
+  "id": "NS5tFYc6smsGaErI",
+  "tags": []
+}

@@ -1,0 +1,165 @@
+{
+  "name": "My workflow 18",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ec1fd014-f9f1-4b6d-a4cf-13befa614f49",
+      "name": "When chat message received",
+      "webhookId": "a2cf91e4-ed33-44e6-a375-97a9790a38e0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=** Role **\nYou are a Research AI Agent.  \nYour goal is to find accurate information from reliable sources and summarize it clearly.  \n\n** Tools Available **  \n1. **perplexity** – Use this to look up real-time or external information.  \n\n** Instructions **\n1. Always search before answering.  \n2. Summarize findings in clear, short sentences.  \n3. If information is missing, state that it is not available.  \n4. Never add personal opinions.  \n5. Return only relevant results.  \n\n** Examples **\n### Input:  \n\"What is the capital of Japan?\"  \n\n** Expected Output ** \n\"The capital of Japan is Tokyo.\"  \n\n** Final Notes **\n- Keep answers concise and factual.  \n- Time now: {{$now}}  \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        192
+      ],
+      "id": "330c22dd-ba5b-49dc-a4d4-3cd92c94b44d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        384
+      ],
+      "id": "261f4356-8558-4fa4-9c86-a7e94e01176c",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        384,
+        384
+      ],
+      "id": "93588640-92f9-435c-ae98-d2131962baf8",
+      "name": "Message a model in Perplexity"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        192
+      ],
+      "id": "661b7cd3-f43b-42a8-89ec-4d588e4363b6",
+      "name": "Telegram Trigger",
+      "webhookId": "b6b59985-dd26-46ef-b189-3463150f0b46"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        192
+      ],
+      "id": "526a7244-e740-405e-a430-46c12f886f03",
+      "name": "Send a text message",
+      "webhookId": "5d2dd585-f3eb-4920-a0c7-1bf6bb5f5cf2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "98f29765-a4b7-4d0e-a66e-454880b940b7",
+  "meta": {
+    "instanceId": "bb90100dc300f56d040f173bb9891f5b9718adc0da05af758a0b593fc0757a48"
+  },
+  "id": "Ospps3LjDMEQUVN4",
+  "tags": []
+}
